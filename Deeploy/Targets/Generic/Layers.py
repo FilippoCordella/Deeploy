@@ -244,6 +244,31 @@ class PowLayer(ONNXLayer):
     def __init__(self, maps: List[NodeMapper]):
         super().__init__(maps)
 
+    def computeShapes(self, inputShapes: Shape, outputShapes: Shape, operatorRepresentation,
+                      channels_first) -> Tuple[Shape, Shape]:
+        base_shape = (1,) if inputShapes[0] == () or inputShapes[0] == [] else inputShapes[0]
+        exp_shape = (1,) if inputShapes[1] == () or inputShapes[1] == [] else inputShapes[1]
+
+        base_dims = list(base_shape)
+        exp_dims = list(exp_shape)
+
+        if len(base_dims) < len(exp_dims):
+            base_dims = [1] * (len(exp_dims) - len(base_dims)) + base_dims
+        elif len(exp_dims) < len(base_dims):
+            exp_dims = [1] * (len(base_dims) - len(exp_dims)) + exp_dims
+
+        out_dims = []
+        for dim_base, dim_exp in zip(base_dims, exp_dims):
+            if dim_base == dim_exp or dim_base == 1 or dim_exp == 1:
+                out_dims.append(max(dim_base, dim_exp))
+            else:
+                raise ValueError(
+                    f"Pow broadcasting mismatch: base shape {base_dims}, exponent shape {exp_dims}")
+
+        input_shapes = [base_dims, exp_dims]
+        output_shapes = [out_dims]
+        return (input_shapes, output_shapes)
+
 
 class SqrtLayer(ONNXLayer):
 

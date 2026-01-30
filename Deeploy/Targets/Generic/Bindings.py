@@ -8,7 +8,7 @@ from Deeploy.AbstractDataTypes import PointerClass
 from Deeploy.CommonExtensions.CodeTransformationPasses.MemoryAllocation import ArgumentStructGeneration, \
     MemoryManagementGeneration, MemoryPassthroughGeneration
 from Deeploy.CommonExtensions.DataTypes import FloatDataTypes, IntegerDataTypes, SignedIntegerDataTypes, float32_t, \
-    int8_t, int32_t, uint8_t
+    int8_t, int32_t, uint8_t, uint32_t
 from Deeploy.DeeployTypes import CodeTransformation, NodeBinding
 from Deeploy.FutureExtension.CodeTransformationPasses.FutureCodeTransformation import FutureGeneration
 from Deeploy.Targets.Generic.Templates import AddTemplate, BatchNormalizationTemplate, ConcatTemplate, ConvTemplate, \
@@ -17,10 +17,10 @@ from Deeploy.Targets.Generic.Templates import AddTemplate, BatchNormalizationTem
     FloatLayernormTemplate, FloatMatMulTemplate, FloatMaxPoolTemplate, FloatMulTemplate, FloatPadTemplate, \
     FloatPowTemplate, FloatReduceMeanTemplate, FloatReluTemplate, FloatSoftmaxTemplate, FloatSqrtTemplate, \
     GatherTemplate, GemmTemplate, IntegerDivTemplate, ITAMaxTemplate, ITAPartialMaxTemplate, MatMulTemplate, \
-    MaxPoolTemplate, MulTemplate, PadTemplate, QuantTemplate, ReduceMeanTemplate, ReduceSumTemplate, \
+    MaxPoolTemplate, MulTemplate, PadTemplate,PowTemplate, QuantTemplate, ReduceMeanTemplate, ReduceSumTemplate, \
     RequantShiftTemplate, ReshapeTemplate, RQIntegerDivTemplate, RQSiGELUTemplate, SliceTemplate, TransposeTemplate, \
     iGELUTemplate, iLayernormTemplate, iRMSNormTemplate, iSoftmaxTemplate
-from Deeploy.Targets.Generic.TypeCheckers import AddChecker, BatchNormChecker, ConcatChecker, ConvChecker, \
+from Deeploy.Targets.Generic.TypeCheckers import AddChecker, PowChecker, BatchNormChecker, ConcatChecker, ConvChecker, \
     DebugPrintChecker, DequantChecker, DivChecker, DummyChecker, GatherChecker, GELUChecker, GEMMChecker, \
     LayerNormChecker, MatMulChecker, MaxPoolChecker, MulChecker, PadChecker, QuantChecker, ReduceMeanChecker, \
     ReduceSumChecker, ReluChecker, RequantShiftChecker, ReshapeChecker, RQIntegerDivChecker, SliceChecker, \
@@ -121,6 +121,11 @@ BasicGEMMBindings = [
 BasicPowBindings = [
     NodeBinding(DummyChecker([PointerClass(float32_t), PointerClass(float32_t)], [PointerClass(float32_t)]),
                 FloatPowTemplate.referenceTemplate, BasicTransformer),
+] + [
+    NodeBinding(
+        PowChecker([PointerClass(int32_t), PointerClass(uint32_t)], [PointerClass(int32_t)]),
+        PowTemplate.referenceTemplate,
+        BasicTransformer)
 ]
 
 BasicSqrtBindings = [
