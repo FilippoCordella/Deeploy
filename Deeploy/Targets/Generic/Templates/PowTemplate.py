@@ -17,10 +17,15 @@ class _PowTemplate(NodeTemplate):
         exponent = ctxt.lookup(operatorRepresentation['exponent'])
         data_out = ctxt.lookup(operatorRepresentation['data_out'])
 
+        #Get type width information
         base_width = data_in._type.referencedType.typeWidth
-        exponent_width = exponent._type.referencedType.typeWidth
         operatorRepresentation['base_width'] = base_width
+        exponent_width = exponent._type.referencedType.typeWidth
         operatorRepresentation['exponent_width'] = exponent_width
+
+        operatorRepresentation['exponent_offset'] = 0
+        if hasattr(exponent, "_signed") and hasattr(exponent, "nLevels"):
+            operatorRepresentation['exponent_offset'] = (exponent._signed==0) * (exponent.nLevels // 2)
 
         # Calculate size
         input_size = int(np.prod(data_in.shape))
@@ -48,8 +53,8 @@ class _PowTemplate(NodeTemplate):
 referenceTemplate = _PowTemplate("""
 // Int Pow (Name: ${nodeName}, Op: ${nodeOp})
 % if is_scalar:
-Pow_int${base_width}_scalar_uint${exponent_width}_int${base_width}(${data_in}, ${exponent_scalar}, ${data_out}, ${size});
+Pow_int${base_width}_scalar_uint${exponent_width}_int${base_width}(${data_in}, ${exponent_scalar}, ${data_out}, ${size}, ${exponent_offset});
 % else:
-Pow_int${base_width}_uint${exponent_width}_int${base_width}(${data_in}, ${exponent}, ${data_out}, ${size});
+Pow_int${base_width}_uint${exponent_width}_int${base_width}(${data_in}, ${exponent}, ${data_out}, ${size}, ${exponent_offset});
 % endif
 """)

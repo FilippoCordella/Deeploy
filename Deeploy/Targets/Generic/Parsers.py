@@ -2065,11 +2065,11 @@ class PowParser(NodeParser):
 
         # Lookup both inputs (data and exponent)
         data_in = ctxt.lookup(node.inputs[0].name)
-        exponent_tensor = ctxt.lookup(node.inputs[1].name)
+        exponent = ctxt.lookup(node.inputs[1].name)
         data_out = ctxt.lookup(node.outputs[0].name)
 
         self.operatorRepresentation['data_in'] = data_in.name
-        self.operatorRepresentation['exponent'] = exponent_tensor.name
+        self.operatorRepresentation['exponent'] = exponent.name
         self.operatorRepresentation['data_out'] = data_out.name
         self.operatorRepresentation['size'] = int(np.prod(data_in.shape))
 

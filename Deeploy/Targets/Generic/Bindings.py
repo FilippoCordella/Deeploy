@@ -123,7 +123,7 @@ BasicPowBindings = [
                 FloatPowTemplate.referenceTemplate, BasicTransformer),
 ] + [
     NodeBinding(
-        PowChecker([PointerClass(int32_t), PointerClass(uint32_t)], [PointerClass(int32_t)]),
+        PowChecker([PointerClass(int32_t), PointerClass(int32_t)], [PointerClass(int32_t)]),
         PowTemplate.referenceTemplate,
         BasicTransformer)
 ]

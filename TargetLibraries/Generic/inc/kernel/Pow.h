@@ -22,8 +22,13 @@ void Pow_fp32_scalar_fp32(const float32_t *__restrict__ data_in,
                           int32_t size);
 
 void Pow_int32_uint32_int32(const int32_t *__restrict__ data_in,
-                            const uint32_t *__restrict__ exponent,
+                            const int32_t *__restrict__ exponent,
                             int32_t *__restrict__ data_out,
-                            int32_t size);
+                            int32_t size, int32_t exponent_offset);
+
+void Pow_int32_scalar_uint32_int32(const int32_t *__restrict__ data_in,
+                            int32_t exponent,
+                            int32_t *__restrict__ data_out,
+                            int32_t size, int32_t exponent_offset);
 
 #endif
