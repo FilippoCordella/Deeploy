@@ -15,7 +15,7 @@ from Deeploy.Targets.GAP9.Bindings import GAP9AddBindings, GAP9ConcatBindings, G
     GAP9iHardswishBindings, GAP9iRMSNormBindings, GAP9iRQSGELUBindings, GAP9LayernormBinding, GAP9MatMulBindings, \
     GAP9MaxPool2DBindings, GAP9MulBindings, GAP9ReduceSumBindings, GAP9ReluBinding, GAP9ReshapeBindings, \
     GAP9RQAddBindings, GAP9RQSBindings, GAP9RQSConv2DBindings, GAP9RQSDWConv2DBindings, GAP9RQSGEMMBindings, \
-    GAP9RQSiHardswishBindings, GAP9RQSMatrixVecBindings, GAP9RQSTallGEMMBindings, GAP9SGDBindings, \
+    GAP9RQSiHardswishBindings, GAP9RQSMatrixVecBindings, GAP9RQSTallGEMMBindings, GAP9SGDBindings, GAP9SILUBindings, \
     GAP9SoftmaxBindings, GAP9SoftmaxCrossEntropyLossBindings, GAP9SoftmaxCrossEntropyLossGradBindings, \
     GAP9SoftmaxGradBindings, GAP9TransposeBindings, GAP9UniformRQSBindings
 from Deeploy.Targets.Generic.TileConstraints.AddTileConstraint import AddTileConstraint
@@ -142,3 +142,6 @@ GAP9ReduceSumTilingReadyBindings = TilingReadyNodeBindings(nodeBindings = GAP9Re
 
 GAP9SGDTilingReadyBindings = TilingReadyNodeBindings(nodeBindings = GAP9SGDBindings,
                                                      tileConstraint = SGDTileConstraint())
+
+GAP9SILUTilingReadyBindings = TilingReadyNodeBindings(nodeBindings = GAP9SILUBindings,
+                                                      tileConstraint = UnaryTileConstraint())
