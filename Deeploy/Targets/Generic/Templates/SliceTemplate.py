@@ -28,12 +28,40 @@ class _SliceTemplate(NodeTemplate):
         endsBuffer._deploy = False
         stepsBuffer._deploy = False
 
-        operatorRepresentation['starts'] = startsBuffer.values
-        operatorRepresentation['ends'] = endsBuffer.values
-        operatorRepresentation['axes'] = axesBuffer.values
-        operatorRepresentation['steps'] = stepsBuffer.values
+        axes = [int(x) for x in axesBuffer.values]
+        starts = [int(x) for x in startsBuffer.values]
+        ends = [int(x) for x in endsBuffer.values]
+        steps = [int(x) for x in stepsBuffer.values]
 
-        operatorRepresentation['data_in_size'] = np.prod(operatorRepresentation['data_in_shape'])
+        shape = operatorRepresentation['data_in_shape']
+        dims = len(shape)
+
+        # Normalize negative axes
+        axes = [ax + dims if ax < 0 else ax for ax in axes]
+
+        # Normalize negative start/end and clamp to valid range (ONNX spec).
+        for i, (ax, start, end, step) in enumerate(zip(axes, starts, ends, steps)):
+            dim = shape[ax]
+            if step > 0:
+                start = max(0, min(dim, start + dim if start < 0 else start))
+                end = max(0, min(dim, end + dim if end < 0 else end))
+            else:
+                start = max(0, min(dim - 1, start + dim if start < 0 else start))
+                if end < 0:
+                    end = end + dim
+                    if end < 0:
+                        end = -1  # sentinel: include element 0
+                else:
+                    end = min(dim - 1, end)
+            starts[i] = start
+            ends[i] = end
+
+        operatorRepresentation['axes'] = axes
+        operatorRepresentation['starts'] = starts
+        operatorRepresentation['ends'] = ends
+        operatorRepresentation['steps'] = steps
+
+        operatorRepresentation['data_in_size'] = np.prod(shape)
 
         return ctxt, operatorRepresentation, []
 
@@ -70,7 +98,11 @@ ${data_out}_offset_${axis} =  ${data_out}_offset_${axis-1} + ${dimSteps[axis]} *
 % endif
 % endfor
 % for axis, start, end, step in zip(axes, starts, ends, steps):
+% if int(step) > 0:
 for(uint32_t i_${axis} = ${start}; i_${axis} < ${end}; i_${axis} += ${step}){
+% else:
+for(int32_t i_${axis} = ${start}; i_${axis} > ${end}; i_${axis} += ${step}){
+% endif
 % if axis == 0:
 ${data_out}_offset_0 =  ${dimSteps[axis]} * i_${axis};
 % else:
