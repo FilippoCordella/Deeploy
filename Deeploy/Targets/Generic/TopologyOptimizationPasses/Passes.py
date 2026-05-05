@@ -839,23 +839,26 @@ def _split_rqs_fun(graph: gs.Graph, match: Match, name: str, splitSet: List[str]
 
     userNodes = t1.outputs[0].outputs
 
-    postSplitInputs = []
-    for idx, var in enumerate(inputVars):
-        if isinstance(var, gs.Variable):
-            postSplitInput = var
-        else:
-            postSplitInput = gs.Constant(name = f"{t1.name}_split_{idx}", values = var.values.copy().reshape(-1,))
-        postSplitInputs.append(postSplitInput)
-
     for idx, node in enumerate(originalNode.outputs.copy()):
 
         nodeName = node.name + f"_rqs"
         varName = node.name + f"_rqs_var"
         newOutput = gs.Variable(name = varName, dtype = np.float32, shape = t1.outputs[0].shape)
 
+        # Each cloned RQS nodes must get its own Constant objects
+        # if the same gs.Constant is shared across N nodes, gs tracks N references
+        # in constant.outputs --> hoistConstant asserts len(outputs) <= 1 and fails.
+        nodeInputs = []
+        for varIdx, var in enumerate(inputVars):
+            if isinstance(var, gs.Variable):
+                nodeInputs.append(var)
+            else:
+                nodeInputs.append(
+                    gs.Constant(name = f"{t1.name}_split_{varIdx}_{idx}", values = var.values.copy().reshape(-1,)))
+
         RQSNode = gs.Node(name = nodeName,
                           op = "RequantShift",
-                          inputs = postSplitInputs,
+                          inputs = nodeInputs,
                           outputs = [newOutput],
                           attrs = t1.attrs)
 
