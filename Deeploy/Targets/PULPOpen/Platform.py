@@ -30,11 +30,12 @@ from Deeploy.Targets.Generic.TopologyOptimizationPasses.Passes import DequantPat
     MergeConstAddAndRequantPass, MergeTrueIntegerDivRequantShiftPass, QuantPatternPass, RQSSplitPass, \
     SkipEmptyConcatPass, SkipUnityRequantPass, iGELURequantMergePass, iHardswishRequantMergePass
 from Deeploy.Targets.PULPOpen.Bindings import BasicDequantBindings, BasicQuantBindings, PULPDMASliceBindings, \
-    PULPDWConv1DBinding
-from Deeploy.Targets.PULPOpen.Layers import PULPRQSConvLayer, PULPRQSGEMMLayer, PULPSoftplusLayer
+    PULPDWConv1DBinding, PULPSelectiveScanBindings
+from Deeploy.Targets.PULPOpen.Layers import PULPRQSConvLayer, PULPRQSGEMMLayer, PULPSelectiveScanLayer, \
+    PULPSoftplusLayer
 from Deeploy.Targets.PULPOpen.Parsers import PULPConv1DParser, PULPConv2DParser, PULPDWConv1DParser, \
     PULPDWConv2DParser, PULPFPConv2DParser, PULPFPDWConv2DParser, PULPGEMMParser, PULPMatrixVecParser, \
-    PULPReduceMeanParser, PULPSoftplusParser, PULPTallGEMMParser
+    PULPReduceMeanParser, PULPSelectiveScanParser, PULPSoftplusParser, PULPTallGEMMParser
 from Deeploy.Targets.PULPOpen.Templates import AllocateTemplate, FreeTemplate
 from Deeploy.Targets.PULPOpen.Tiler import PULPAddTilingReadyBindings, PULPConcatTilingReadyBindings, \
     PULPConv2DTilingReadyBindings, PULPDWConv2DTilingReadyBindings, PULPFlattenTilingReadyBindings, \
@@ -64,6 +65,7 @@ MulMapper = NodeMapper(MulParser(), PULPMulTilingReadyBindings)
 Pad1DMapper = NodeMapper(Pad1DParser(), BasicPad1DBindings)
 Pad2DMapper = NodeMapper(Pad2DParser(), BasicPad2DBindings)
 ReshapeMapper = NodeMapper(ReshapeParser(), PULPFlattenTilingReadyBindings)
+SelectiveScanMapper = NodeMapper(PULPSelectiveScanParser(), PULPSelectiveScanBindings)
 TransposeMapper = NodeMapper(TransposeParser(), PULPTransposeTilingReadyBindings)
 UnsqueezeMapper = NodeMapper(UnsqueezeParser(), PULPFlattenTilingReadyBindings)
 
@@ -120,6 +122,7 @@ PULPMapping = {
     'Gemm': GEMMLayer([FloatGEMMMapper, GEMMDequantMapper]),
     'Gelu': GELULayer([GELUMapper]),
     'GeluGrad': GELUGradLayer([GELUGradMapper]),
+    'SelectiveScan': PULPSelectiveScanLayer([SelectiveScanMapper]),
     'SILU': SILULayer([SILUMapper]),
     'Softplus': PULPSoftplusLayer([SoftplusMapper]),
     'LayerNormalization': LayerNormLayer([LayerNormMapper]),

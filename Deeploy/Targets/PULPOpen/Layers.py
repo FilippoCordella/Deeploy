@@ -56,3 +56,17 @@ class PULPSoftplusLayer(ONNXLayer):
     def computeOps(self):
         # LUT-based: only memory loads/stores, no arithmetic ops
         return 0
+
+
+class PULPSelectiveScanLayer(ONNXLayer):
+
+    def __init__(self, maps: List[NodeMapper]):
+        super().__init__(maps)
+
+    def computeOps(self):
+        B = self.mapper.parser.operatorRepresentation['batch_size']
+        L = self.mapper.parser.operatorRepresentation['seq_len']
+        D = self.mapper.parser.operatorRepresentation['d_inner']
+        N = self.mapper.parser.operatorRepresentation['d_state']
+        ops_per_td = 7 * N + 3
+        return B * L * D * ops_per_td

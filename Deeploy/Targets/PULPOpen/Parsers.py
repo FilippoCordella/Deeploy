@@ -513,3 +513,51 @@ class PULPSoftplusParser(NodeParser):
         self.operatorRepresentation['size'] = int(np.prod(data_in.shape))
 
         return ctxt, True
+
+
+class PULPSelectiveScanParser(NodeParser):
+
+    def __init__(self):
+        super().__init__()
+
+    def parseNode(self, node: gs.Node) -> bool:
+        ret = all([
+            node.op == 'SelectiveScan',
+            len(node.inputs) == 7,
+            len(node.outputs) == 1,
+        ])
+        if ret:
+            if 'batch' in node.attrs:
+                self.operatorRepresentation['batch_size'] = int(node.attrs['batch'])
+            elif 'batch_size' in node.attrs:
+                self.operatorRepresentation['batch_size'] = int(node.attrs['batch_size'])
+            if 'seq_len' in node.attrs:
+                self.operatorRepresentation['seq_len'] = int(node.attrs['seq_len'])
+            if 'd_inner' in node.attrs:
+                self.operatorRepresentation['d_inner'] = int(node.attrs['d_inner'])
+            if 'd_state' in node.attrs:
+                self.operatorRepresentation['d_state'] = int(node.attrs['d_state'])
+
+        return ret
+
+    def parseNodeCtxt(self,
+                      ctxt: NetworkContext,
+                      node: gs.Node,
+                      channels_first: bool = True) -> Tuple[NetworkContext, bool]:
+
+        newCtxt, ret = super().parseNodeCtxt(ctxt, node, channels_first)
+
+        if ret:
+            # ONNX input order matches [x, z, dt, B, C, A, D_skip]
+            inputs = ['x', 'z', 'dt', 'B', 'C', 'A', 'D_skip']
+            outputs = ['y']
+
+            for idx, inputNode in enumerate(node.inputs):
+                self.operatorRepresentation[inputs[idx]] = newCtxt.lookup(inputNode.name).name
+
+            for idx, outputNode in enumerate(node.outputs):
+                self.operatorRepresentation[outputs[idx]] = newCtxt.lookup(outputNode.name).name
+
+            return newCtxt, True
+        else:
+            return ctxt, False

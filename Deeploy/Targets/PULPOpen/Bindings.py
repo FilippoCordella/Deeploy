@@ -33,11 +33,11 @@ from Deeploy.Targets.PULPOpen.Templates import ConvTemplate, DMASliceTemplate, F
     FloatGELUTemplate, FloatGemmTemplate, FloatLayernormTemplate, FloatMatMulTemplate, FloatMaxPoolTemplate, \
     FloatMulTemplate, FloatReduceMeanTemplate, FloatReluTemplate, FloatSoftmaxTemplate, GEMMTemplate, \
     MatrixVectorTemplate, MaxPoolTemplate, MulTemplate, ReduceMeanTemplate, RequantShiftTemplate, ReshapeTemplate, \
-    RQAddTemplate, RQSiHardswishTemplate, SGDTemplate, SILUTemplate, SoftmaxCrossEntropyLossTemplate, \
-    SoftplusTemplate, TallGEMMTemplate, TransposeTemplate, UniformRequantShiftTemplate, iRMSNormTemplate, \
-    iSoftmaxTemplate
+    RQAddTemplate, RQSiHardswishTemplate, SelectiveScanTemplate, SGDTemplate, SILUTemplate, \
+    SoftmaxCrossEntropyLossTemplate, SoftplusTemplate, TallGEMMTemplate, TransposeTemplate, \
+    UniformRequantShiftTemplate, iRMSNormTemplate, iSoftmaxTemplate
 from Deeploy.Targets.PULPOpen.TypeCheckers import PULPConvChecker, PULPLinearChecker, PULPMaxPoolChecker, \
-    PULPRequantShiftChecker, PULPSoftplusChecker
+    PULPRequantShiftChecker, PULPSelectiveScanChecker, PULPSoftplusChecker
 from Deeploy.TilingExtension.CodeTransformationPasses.TilingVariableReplacement import TilingVariableReplacement, \
     TilingVariableReplacementUpdate
 
@@ -474,4 +474,17 @@ PULPSoftplusBindings = [
                 ForkTransformer),
     NodeBinding(PULPSoftplusChecker([PointerClass(int32_t)], [PointerClass(int16_t)]),
                 SoftplusTemplate.referenceTemplate, ForkTransformer),
+]
+
+PULPSelectiveScanBindings = [
+    NodeBinding(
+        PULPSelectiveScanChecker([
+            PointerClass(int8_t),
+            PointerClass(int8_t),
+            PointerClass(int16_t),
+            PointerClass(int32_t),
+            PointerClass(int32_t),
+            PointerClass(int32_t),
+            PointerClass(int32_t)
+        ], [PointerClass(int8_t)]), SelectiveScanTemplate.referenceTemplate, ForkTransformer)
 ]
