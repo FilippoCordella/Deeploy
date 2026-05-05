@@ -193,7 +193,7 @@ class PULPDWConv1DParser(RQSConv1DParser):
         if wellFormed:
             ret = all([
                 # Make sure padding is square
-                self.operatorRepresentation['pads'][0] == self.operatorRepresentation['pads'][1],
+                #self.operatorRepresentation['pads'][0] == self.operatorRepresentation['pads'][1],
                 #self.operatorRepresentation['pads'][0] == 0,
                 # Don't support dilations
                 #all([coeff == 1 for coeff in self.operatorRepresentation['dilations']]),
@@ -233,6 +233,20 @@ class PULPDWConv1DParser(RQSConv1DParser):
             if not self.operatorRepresentation['group'] == newCtxt.lookup(
                     self.operatorRepresentation['weight']).shape[0]:
                 return ctxt, False
+
+            # PULP DW Conv keeps the input in NCHW layout (see PULPNCHWtoNHWCDwConvPass);
+            # only the output is transposed. Override channels_first-dependent dim reads
+            # set by the base parser to use the NCHW input shape regardless of channels_first.
+            data_in = newCtxt.lookup(self.operatorRepresentation['data_in'])
+            data_out = newCtxt.lookup(self.operatorRepresentation['data_out'])
+            self.operatorRepresentation['ch_im_in'] = data_in.shape[1]
+            self.operatorRepresentation['dim_im_in_y'] = data_in.shape[2]
+            if channels_first:
+                self.operatorRepresentation['ch_im_out'] = data_out.shape[1]
+                self.operatorRepresentation['dim_im_out_y'] = data_out.shape[2]
+            else:
+                self.operatorRepresentation['ch_im_out'] = data_out.shape[2]
+                self.operatorRepresentation['dim_im_out_y'] = data_out.shape[1]
 
             # if not newCtxt.is_global(self.operatorRepresentation['weight']):
             #     return ctxt, False
