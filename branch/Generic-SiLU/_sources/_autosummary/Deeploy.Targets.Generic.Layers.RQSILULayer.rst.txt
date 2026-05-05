@@ -1,0 +1,47 @@
+.. SPDX-FileCopyrightText: 2024 ETH Zurich and University of Bologna
+..
+.. SPDX-License-Identifier: Apache-2.0
+
+Deeploy.Targets.Generic.Layers.RQSILULayer
+==========================================
+
+.. currentmodule:: Deeploy.Targets.Generic.Layers
+
+.. autoclass:: RQSILULayer
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   
+   .. rubric:: Methods
+   .. automethod:: __init__
+
+   .. autosummary::
+   
+      ~RQSILULayer.__init__
+      ~RQSILULayer.bind
+      ~RQSILULayer.broadcast
+      ~RQSILULayer.codeTransform
+      ~RQSILULayer.computeOps
+      ~RQSILULayer.computeShapes
+      ~RQSILULayer.discardCurrentMapper
+      ~RQSILULayer.generate
+      ~RQSILULayer.parse
+      ~RQSILULayer.resetDiscardedMappers
+      ~RQSILULayer.typeCheck
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~RQSILULayer.maps
+      ~RQSILULayer.mapper
+      ~RQSILULayer.discardedMappers
+      ~RQSILULayer.node
+   
+   
