@@ -11,7 +11,7 @@ import numpy as np
 import onnx_graphsurgeon as gs
 
 from Deeploy.CommonExtensions.OptimizationPasses.Matchers import BranchingMatcher, Match, NonBranchingMatcher
-from Deeploy.CommonExtensions.OptimizationPasses.PassClasses import ReplaceSequentialPatternPass, contextagnostic
+from Deeploy.CommonExtensions.OptimizationPasses.PassClasses import Pass, ReplaceSequentialPatternPass, contextagnostic
 
 
 def _merge_trueintegerdiv_rq_fun(graph: gs.Graph, match: Match, name: str):
@@ -1177,3 +1177,43 @@ class DequantPatternPass(ReplaceSequentialPatternPass):
 
         name = "_RECOGNIZE_DEQUANT_PASS"
         super().__init__(graph, _recognize_dequant_fun, name)
+
+
+def _split_to_slice_fun(graph: gs.Graph, split_node: gs.Node, name: str):
+    input = split_node.inputs[0]
+    axis = int(split_node.attrs.get('axis', 0))
+    split_ranges = [int(value) for value in split_node.inputs[1].values.tolist()]
+
+    rank = len(input.shape) if input.shape is not None else 0
+    norm_axis = axis if axis >= 0 else axis + rank
+
+    start = 0
+    for out_index, out in enumerate(list(split_node.outputs)):
+        end = start + split_ranges[out_index]
+        graph.nodes.append(
+            gs.Node(op = 'Slice',
+                    name = f"{name}_slice{out_index}",
+                    inputs = [
+                        input,
+                        gs.Constant(f"{name}_slice{out_index}_start", np.array([start], dtype = np.int64)),
+                        gs.Constant(f"{name}_slice{out_index}_end", np.array([end], dtype = np.int64)),
+                        gs.Constant(f"{name}_slice{out_index}_axes", np.array([norm_axis], dtype = np.int64)),
+                        gs.Constant(f"{name}_slice{out_index}_steps", np.array([1], dtype = np.int64)),
+                    ],
+                    outputs = [out]))
+        start = end
+
+    split_node.inputs.clear()
+    split_node.outputs.clear()
+    return graph
+
+
+@contextagnostic
+class SplitToSlicePass(Pass):
+
+    def run_pass(self, graph: gs.Graph) -> gs.Graph:
+        split_nodes = [n for n in graph.nodes if n.op == 'Split']
+        for i, split in enumerate(split_nodes):
+            _split_to_slice_fun(graph, split, f"_SPLIT_TO_SLICE_PASS_{i}")
+        graph.cleanup().toposort()
+        return graph

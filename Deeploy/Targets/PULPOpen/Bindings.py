@@ -169,7 +169,7 @@ PULPSliceBindings = [
             ],
             [PointerClass(float_type)]),
         SliceTemplate.referenceTemplate,
-        ForkTransformer) for float_type in FloatDataTypes + (int8_t, uint8_t) for int_type in IntegerDataTypes
+        ForkTransformer) for float_type in (*FloatDataTypes, *IntegerDataTypes) for int_type in IntegerDataTypes
 ]
 
 PULPReshapeBindings = [
