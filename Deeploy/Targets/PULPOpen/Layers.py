@@ -4,7 +4,7 @@
 
 from typing import List, Tuple
 
-from Deeploy.DeeployTypes import NodeMapper, Shape
+from Deeploy.DeeployTypes import NodeMapper, ONNXLayer, Shape
 from Deeploy.Targets.Generic.Layers import RQGEMMLayer, RQSConvLayer
 
 
@@ -41,3 +41,18 @@ class PULPRQSGEMMLayer(RQGEMMLayer):
         inputShapes[3] = [inputShapes[1][channelDim]]  # Channels out dimension of Kernel
 
         return (inputShapes, outputShapes)
+
+
+class PULPSoftplusLayer(ONNXLayer):
+
+    def __init__(self, maps: List[NodeMapper]):
+        super().__init__(maps)
+
+    def computeShapes(self, inputShapes: Shape, outputShapes: Shape, operatorRepresentation,
+                      channels_first) -> Tuple[Shape, Shape]:
+        # Elementwise operation - output shape equals input shape
+        return (inputShapes, outputShapes)
+
+    def computeOps(self):
+        # LUT-based: only memory loads/stores, no arithmetic ops
+        return 0

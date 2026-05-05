@@ -31,10 +31,10 @@ from Deeploy.Targets.Generic.TopologyOptimizationPasses.Passes import DequantPat
     SkipEmptyConcatPass, SkipUnityRequantPass, iGELURequantMergePass, iHardswishRequantMergePass
 from Deeploy.Targets.PULPOpen.Bindings import BasicDequantBindings, BasicQuantBindings, PULPDMASliceBindings, \
     PULPDWConv1DBinding
-from Deeploy.Targets.PULPOpen.Layers import PULPRQSConvLayer, PULPRQSGEMMLayer
+from Deeploy.Targets.PULPOpen.Layers import PULPRQSConvLayer, PULPRQSGEMMLayer, PULPSoftplusLayer
 from Deeploy.Targets.PULPOpen.Parsers import PULPConv1DParser, PULPConv2DParser, PULPDWConv1DParser, \
     PULPDWConv2DParser, PULPFPConv2DParser, PULPFPDWConv2DParser, PULPGEMMParser, PULPMatrixVecParser, \
-    PULPReduceMeanParser, PULPTallGEMMParser
+    PULPReduceMeanParser, PULPSoftplusParser, PULPTallGEMMParser
 from Deeploy.Targets.PULPOpen.Templates import AllocateTemplate, FreeTemplate
 from Deeploy.Targets.PULPOpen.Tiler import PULPAddTilingReadyBindings, PULPConcatTilingReadyBindings, \
     PULPConv2DTilingReadyBindings, PULPDWConv2DTilingReadyBindings, PULPFlattenTilingReadyBindings, \
@@ -48,8 +48,8 @@ from Deeploy.Targets.PULPOpen.Tiler import PULPAddTilingReadyBindings, PULPConca
     PULPRQSiHardswishTilingReadyBindings, PULPRQSMatrixVecTilingReadyBindings, PULPRQSTallGEMMTilingReadyBindings, \
     PULPRQSTilingReadyBindings, PULPSGDTilingReadyBindings, PULPSILUTilingReadyBindings, PULPSliceTilingReadyBindings, \
     PULPSoftmaxCrossEntropyGradTilingReadyBindings, PULPSoftmaxCrossEntropyTilingReadyBindings, \
-    PULPSoftmaxGradTilingReadyBindings, PULPSoftmaxTilingReadyBindings, PULPTransposeTilingReadyBindings, \
-    PULPUniformRQSTilingReadyBindings
+    PULPSoftmaxGradTilingReadyBindings, PULPSoftmaxTilingReadyBindings, PULPSoftplusTilingReadyBindings, \
+    PULPTransposeTilingReadyBindings, PULPUniformRQSTilingReadyBindings
 from Deeploy.Targets.PULPOpen.TopologyOptimizationPasses.Passes import PULPAddRequantMergePass, \
     PULPConvRequantMergePass, PULPGEMMRequantMergePass, PULPMatMulRequantMergePass
 
@@ -94,6 +94,7 @@ ReluMapper = NodeMapper(ReluParser(), PULPReluTilingReadyBindings)
 SoftmaxMapper = NodeMapper(SoftmaxParser(), PULPSoftmaxTilingReadyBindings)
 SoftmaxGradMapper = NodeMapper(SoftmaxGradParser(), PULPSoftmaxGradTilingReadyBindings)
 Softmax_int8_Mapper = NodeMapper(iSoftmaxParser(), PULPSoftmaxTilingReadyBindings)
+SoftplusMapper = NodeMapper(PULPSoftplusParser(), PULPSoftplusTilingReadyBindings)
 
 ConcatMapper = NodeMapper(ConcatParser(), PULPConcatTilingReadyBindings)
 
@@ -120,6 +121,7 @@ PULPMapping = {
     'Gelu': GELULayer([GELUMapper]),
     'GeluGrad': GELUGradLayer([GELUGradMapper]),
     'SILU': SILULayer([SILUMapper]),
+    'Softplus': PULPSoftplusLayer([SoftplusMapper]),
     'LayerNormalization': LayerNormLayer([LayerNormMapper]),
     'LayerNormalizationGrad': LayerNormGradLayer([LayerNormGradMapper]),
     'MaxPool': MaxPoolLayer([MaxPool1DMapper, MaxPool2DMapper]),

@@ -10,7 +10,7 @@ from Deeploy.CommonExtensions.CodeTransformationPasses.Closure import ClosureGen
 from Deeploy.CommonExtensions.CodeTransformationPasses.MemoryAllocation import ArgumentStructGeneration, \
     MemoryManagementGeneration, MemoryPassthroughGeneration
 from Deeploy.CommonExtensions.DataTypes import FloatDataTypes, IntegerDataTypes, SignedIntegerDataTypes, float32_t, \
-    int8_t, int32_t, int64_t, uint8_t
+    int8_t, int16_t, int32_t, int64_t, uint8_t
 from Deeploy.DeeployTypes import CodeTransformation, NodeBinding, NodeTemplate
 from Deeploy.FutureExtension.Bindings.AutoFutureBinding import AutoFutureBinding
 from Deeploy.FutureExtension.CodeTransformationPasses.FutureCodeTransformation import FutureGeneration
@@ -34,9 +34,10 @@ from Deeploy.Targets.PULPOpen.Templates import ConvTemplate, DMASliceTemplate, F
     FloatMulTemplate, FloatReduceMeanTemplate, FloatReluTemplate, FloatSoftmaxTemplate, GEMMTemplate, \
     MatrixVectorTemplate, MaxPoolTemplate, MulTemplate, ReduceMeanTemplate, RequantShiftTemplate, ReshapeTemplate, \
     RQAddTemplate, RQSiHardswishTemplate, SGDTemplate, SILUTemplate, SoftmaxCrossEntropyLossTemplate, \
-    TallGEMMTemplate, TransposeTemplate, UniformRequantShiftTemplate, iRMSNormTemplate, iSoftmaxTemplate
+    SoftplusTemplate, TallGEMMTemplate, TransposeTemplate, UniformRequantShiftTemplate, iRMSNormTemplate, \
+    iSoftmaxTemplate
 from Deeploy.Targets.PULPOpen.TypeCheckers import PULPConvChecker, PULPLinearChecker, PULPMaxPoolChecker, \
-    PULPRequantShiftChecker
+    PULPRequantShiftChecker, PULPSoftplusChecker
 from Deeploy.TilingExtension.CodeTransformationPasses.TilingVariableReplacement import TilingVariableReplacement, \
     TilingVariableReplacementUpdate
 
@@ -466,4 +467,11 @@ BasicDequantBindings = [
 PULPSILUBindings = [
     NodeBinding(SILUChecker([PointerClass(int8_t)], [PointerClass(type)]), SILUTemplate.referenceTemplate,
                 ForkTransformer) for type in (int8_t, int32_t)
+]
+
+PULPSoftplusBindings = [
+    NodeBinding(PULPSoftplusChecker([PointerClass(int8_t)], [PointerClass(int8_t)]), SoftplusTemplate.referenceTemplate,
+                ForkTransformer),
+    NodeBinding(PULPSoftplusChecker([PointerClass(int32_t)], [PointerClass(int16_t)]),
+                SoftplusTemplate.referenceTemplate, ForkTransformer),
 ]

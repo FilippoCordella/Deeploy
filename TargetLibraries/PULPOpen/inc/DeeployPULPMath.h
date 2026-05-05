@@ -31,6 +31,7 @@
 #include "kernel/RQiHardswish.h"
 #include "kernel/RequantShift.h"
 #include "kernel/Softmax.h"
+#include "kernel/Softplus.h"
 #include "kernel/UniformRequantShift.h"
 #include "kernel/gemv.h"
 #include "kernel/iRMSnorm.h"
